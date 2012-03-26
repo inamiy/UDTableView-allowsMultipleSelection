@@ -147,9 +147,15 @@
     for( NSIndexPath *indexPath in [_indexPathsForSelectedRows allObjects] ){
         [self deselectRowAtIndexPath:indexPath animated:NO];
     }
-    [_indexPathsForSelectedRows removeAllObjects];
     
     [super setEditing:editing animated:animated];
+    
+    //
+    // NOTE:
+    // In iOS4 SDK, selectRowAtIndexPath & invalid _indexPathsForSelectedRows adding occurs 
+    // after [super setEditing:animated:], so make sure to remove all objects after that.
+    //
+    [_indexPathsForSelectedRows removeAllObjects];
 }
 
 
@@ -301,7 +307,15 @@
 
 - (NSArray *)indexPathsForSelectedRows {
     if( _needsMultipleSelectionBackport ){
-        return [_indexPathsForSelectedRows allObjects];
+        
+        NSArray* selectedIndexPaths = [_indexPathsForSelectedRows allObjects];
+        if( [selectedIndexPaths count] > 0 ) {
+            return selectedIndexPaths;
+        }else{
+            // return nil if empty
+            return nil;
+        }
+        
     }else{
         return [super indexPathsForSelectedRows];
     }
